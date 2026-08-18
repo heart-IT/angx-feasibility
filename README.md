@@ -149,7 +149,7 @@ Estimates assume a CLI/daemon-grade prototype — full protocol, real replicatio
 
 The milestone sums give 10.5–14.5 weeks at the full field-grade acceptance bar. The realistic floor is **8–10 weeks** if Phase 0 lands the simplest viable witness-discovery design (G-2), the CLI acceptance bar stays lean, and partner-chain reachability stays at enumerate-and-query (G-6a) — hence the **8–14 engineer-week** range this assessment quotes overall, to be narrowed after the design phase.
 
-Calendar translation: roughly **2–4 months** for one senior engineer, or about 2–2.5 months with two at the top of the range. A minimal desktop GUI client over the same daemon is a separately scoped follow-on, adding an estimated **4–6 weeks**. A design-resolution phase for G-1 through G-6 ([§11](#11-recommended-engagement-structure)) adds **0.5–1 week** up front and de-risks everything after it.
+Calendar translation: roughly **2–4 months** for one senior engineer, or about 2–2.5 months with two at the top of the range. A minimal desktop GUI client over the same daemon is a separately scoped follow-on, adding an estimated **4–6 weeks**. A design-resolution phase for G-1 through G-6 adds **0.5–1 week** up front and de-risks everything after it; [§11](#11-recommended-engagement-structure) bundles it with M0 as the first fixed-price package.
 
 ## §9 Scoping questions
 
@@ -175,9 +175,9 @@ Answers to these determine the final quote and timeline:
 
 ## §11 Recommended engagement structure
 
-1. **Phase 0 — design resolution** (0.5–1 week, fixed scope). Close G-1 through G-6 and questions Q-1…Q-5 as short written protocol decisions with your sign-off. Deliverable: an amended schema addendum both sides build against. This is the cheapest week of the whole project and removes most of its risk.
-2. **Phase 1 — core-loop build** (M0–M6, 8–14 engineer-weeks, milestone-billed). Each milestone lands as reviewable, tested code; M6 ends with two physical bases partnered and soak-tested on target hardware.
-3. **Phase 2 — optional follow-ons.** Minimal GUI client (~4–6 weeks); selective Contact disclosure (G-5); federated live search (G-6b); multi-steward bases via Autobase; reader/bridge integration — each scoped and priced after Phase 1 proves the core.
+1. **Package 1 — design + foundations** (fixed price; design resolution + milestone M0). Two parts, in order: *(a)* close G-1 through G-6 and questions Q-1…Q-5 as short written protocol decisions with your sign-off, delivered as a schema addendum both sides build against; *(b)* implement M0 against those signed-off decisions — wire schema and code generation, keypair/identity layout, Corestore structure — validated on reference Raspberry Pi hardware. Ends with running code and a fixed price and date for each remaining milestone, quoted with schema and hardware risk already retired.
+2. **Package 2 — core-loop build** (M1–M6, milestone-billed). Each milestone lands as reviewable, tested code; M6 ends with two physical bases partnered and soak-tested on target hardware.
+3. **Package 3 — optional follow-ons.** Minimal GUI client (~4–6 weeks); selective Contact disclosure (G-5); federated live search (G-6b); multi-steward bases via Autobase; reader/bridge integration — each scoped and priced after the core proves out.
 
 ---
 
