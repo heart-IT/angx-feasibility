@@ -47,17 +47,17 @@ Every construct in the schema maps onto an existing, maintained primitive. Nothi
 
 | Spec concept | Stack primitive | Fit |
 |---|---|---|
-| One node = one append-only signed feed | One Hypercore per node, derived from the steward's Corestore. The Node ID is the core's Ed25519 public key — 256 bits, 64 hex characters, exactly as the schema specifies. | clean |
-| Signal / Entry IDs, citable and verifiable | Address every entry as `(feedKey, seq)` rather than a random ID. This is what makes the schema's own claim — "any client can independently verify a cited Entry ID exists in the referenced base's feed" — literally true, at zero cost. | clean |
+| One node = one append-only signed feed | One Hypercore per node, derived from the steward's Corestore — the stack's key manager, which derives any number of feed keypairs deterministically from one master key. The Node ID is the core's Ed25519 public key — 256 bits, 64 hex characters, exactly as the schema specifies. | clean |
+| Signal / Entry IDs, citable and verifiable | Address every entry as `(feedKey, seq)` — the feed's public key plus the entry's position in that feed — rather than a random ID. This is what makes the schema's own claim — "any client can independently verify a cited Entry ID exists in the referenced base's feed" — literally true, at zero cost. | clean |
 | Immutability, signing, tamper-evidence | Native Hypercore behavior: BLAKE2b Merkle tree with Ed25519-signed roots, verified automatically on replication. Constraints 3, 6, and 8 come for free. | native |
 | Learning-signal attachments, ≤10 MB, fetched on demand | A Hyperdrive per node (internally a Hyperbee for metadata plus Hyperblobs for content). Sparse replication is the default, so attachments download only when fetched — the exact behavior SCHEMA.md's Content Persistence section asks for. | clean |
 | Library (automatic per-keypair collection) | A Hyperbee derived from the keypair, listing own node keys and replicated feed keys, announced on Hyperswarm under its discovery key. This directly resolves the "library address resolution" open question. | clean |
 | Querying (type, location, signal text, witness activity…) | Local Hyperbee/Hyperdb indexes built by tailing replicated feeds. A base can additionally publish its index as its own core, letting remote clients query it sparsely without replicating every curated feed first. | clean |
 | Base: identity + Collection Log + Partner Log | One base Hypercore (single writer: the base keypair) carrying typed entries per the schema, plus the published index above. | clean |
 | Steward co-signature (consent-required curation); dual-signed handshakes | Detached libsodium signatures over a canonical encoding of the entry payload, embedded inside the appended entry. Hypercore itself signs only with the feed key; second signatures are payload-level. A standard, well-understood pattern. | clean |
-| Partner handshake exchange | A small typed protocol channel (Protomux) between the two bases: propose → review cited entries → co-sign → each side appends to its own feed independently, as the schema requires. | clean |
+| Partner handshake exchange | A small typed message channel between the two bases (Protomux, the stack's layer for running typed protocols over one encrypted peer connection): propose → review cited entries → co-sign → each side appends to its own feed independently, as the schema requires. | clean |
 | Discovery | One Hyperswarm instance per client; one topic per discovery key (node topics, base topic, library topic). The "node curation discovery" open question resolves itself: curating bases already sit on the node's topic to replicate it. | clean |
-| Space keypair ↔ base keypair relationship | The spec's proposed sibling *derivation* does not achieve public verifiability ([G-5](#g-5--consent-required-contact-privacy-is-the-hardest-feature-in-the-spec)). The right primitive is an attestation proof chain (`keet-identity-key`-style), which is maintained, audited ecosystem code. | spec correction |
+| Space keypair ↔ base keypair relationship | The spec's proposed sibling *derivation* does not achieve public verifiability ([G-5](#g-5--consent-required-contact-privacy-is-the-hardest-feature-in-the-spec)). The right primitive is an attestation proof chain (`keet-identity-key`-style): a root key signs a statement vouching for each related key, and anyone can verify those signatures — the same mechanism Keet uses to tie a user's devices to one identity. Maintained ecosystem code, not custom cryptography. | spec correction |
 | Multiple base stewards (open question, out of scope) | Autobase, later. Correctly deferred by the spec; nothing in the scoped prototype forecloses it. | deferred |
 
 ## §3 What the stack provides natively
@@ -70,7 +70,7 @@ Every construct in the schema maps onto an existing, maintained primitive. Nothi
 
 ## §4 Why no Autobase is needed
 
-The most important structural observation in this assessment: **every feed in the scoped prototype has exactly one writer.** A steward's node feeds are written only by the steward's keypair. A base's feed is written only by the base keypair. Witness signals live in the *witness's own* feed, not the observed node's. Cross-actor constructs — co-signed curation entries, dual-signed handshakes — are second signatures *inside* a single-writer entry, not second writers.
+The most important structural observation in this assessment: **every feed in the scoped prototype has exactly one writer.** A steward's node feeds are written only by the steward's keypair. A base's feed is written only by the base keypair. Witness signals live in the *witness's own* feed, not the observed node's. Cross-actor constructs — co-signed curation entries, dual-signed handshakes — are second signatures *inside* a single-writer entry, not second writers. In practice: the base writes the curation entry; the steward's approval travels as a signature carried within it.
 
 Multi-writer coordination (Autobase) is where P2P builds on this stack accumulate most of their complexity, subtle bugs, and testing cost. The ANGX core loop avoids it entirely by design — likely by accident of good instincts, and worth preserving deliberately. The one place multi-writer may eventually matter (several stewards operating one base) is already marked as an open question in the schema and can be added later without reworking the core.
 
@@ -80,37 +80,37 @@ These gaps sit inside the scoped prototype. Each is resolvable — proposed reso
 
 ### G-1 — Witness gating is read-time validation, not write-time enforcement
 
-Nothing can stop a keypair from appending a witness-shaped entry to its own feed — that is the nature of author-signed logs. "Requires a verified node" can only mean that every client and base independently evaluates the witness's status and *discards invalid witness signals when reading and indexing*. This is consistent with Constraint 10's own framing ("the claim is cryptographic; the act is not"), but the spec never states it, and it changes what gets built: the heart of the prototype is a deterministic **verification resolver** — a pure function from replicated data to verified/unverified/unknown — applied identically by every client.
+Nothing can stop a keypair from appending a witness-shaped entry to its own feed — that is the nature of author-signed logs. Concretely: when David posts witness signals about Amara's filter, they go into David's own feed, and no central point exists where his verified status could be checked at the moment of writing. "Requires a verified node" can therefore only mean that every client and base independently evaluates the witness's status and *discards invalid witness signals when reading and indexing*. This is consistent with Constraint 10's own framing ("the claim is cryptographic; the act is not"), but the spec never states it, and it changes what gets built: the heart of the prototype is a deterministic **verification resolver**: a fixed rulebook that maps the feeds a client holds to `verified` / `unverified` / `unknown` and gives the same answer on every device holding the same data.
 
 **Resolution:** specify the resolver as part of the protocol: its inputs, its rules, and its behavior when data is missing. Signals from unverifiable witnesses are retained (append-only) but excluded from witness-gated views and marked in UI.
 
 ### G-2 — Witness discoverability is unspecified — the largest missing mechanism
 
-Witness signals live in the witness's feed but conceptually attach to the observed node. Nothing in the schema says how a base curating a node ever *learns* that some other steward's feed contains witness signals about it. Without a mechanism, the two-stream model (steward stream + witness stream) cannot be assembled by anyone.
+Witness signals live in the witness's feed but conceptually attach to the observed node. In walkthrough terms: David's witness signals about Amara's filter land in David's feed, and nothing in the schema tells mathare-kitchen — which curates Amara's node — that David's feed now contains signals about it. Unless someone who already knows of his feed replicates it, those signals are invisible. Without a discovery mechanism, the two-stream model (steward stream + witness stream) cannot be assembled by anyone.
 
 **Resolution:** witnesses announce on the observed node's discovery topic (which curating bases and the steward already join). Peers on that topic exchange a small typed message — "I hold witness signals for this node; my library key is X" — after which normal replication and indexing take over. Natural to the stack, but it is new protocol surface and needs sign-off.
 
 ### G-3 — Verified status is recursive and depends on data availability
 
-Node verified ⇐ curated by a verified base ⇐ holds an *active* handshake ⇐ mutual entries in two feeds, minus unilateral dissolutions and retirements. Evaluating this requires holding the relevant base feeds — and their partners' feeds one hop out. The computation is deterministic *given the data*; the spec must say what a client answers when it doesn't hold the data (unknown must be distinct from unverified), and must pin down the first-base / second-base bootstrap special case exactly.
+Node verified ⇐ curated by a verified base ⇐ holds an *active* handshake ⇐ mutual entries in two feeds, minus unilateral dissolutions and retirements. Evaluating this requires holding the relevant base feeds — and their partners' feeds one hop out. The computation is deterministic *given the data*; the spec must say what a client answers when it doesn't hold the data, and must pin down the first-base / second-base bootstrap special case exactly. Concretely: to decide whether David's node is verified, a client needs the Kampala base's feed (for the `added` entry), that base's Partner Log, and the partner's own feed (to confirm the handshake is mutual and still active). When any of those is missing, the honest answer is "unknown" — a state distinct from "unverified", and one the spec currently has no word for.
 
 **Resolution:** three-valued resolver output (`verified` / `unverified` / `unknown`) with defined replication prerequisites; bootstrap cases encoded as explicit rules with test vectors.
 
 ### G-4 — Timestamps are self-reported; "active as of time T" is unverifiable
 
-An append-only feed proves order *within* one feed, never wall-clock time. Entries can be backdated at will. Any rule phrased as "was verified at the time of posting" is therefore unenforceable as written.
+An append-only feed proves order *within* one feed, never wall-clock time. Nothing stops a steward from writing an entry today that carries last year's date. Any rule phrased as "was verified at the time of posting" is therefore unenforceable as written.
 
 **Resolution:** anchor validity to citations rather than clocks. Happened-*after* is provable: a witness signal referencing a Collection Log entry `(baseKey, seq)` provably came after it. The schema already uses citation-based verification for handshakes (Reviewed Entries) — this extends the spec's own idea. Wall-clock timestamps remain as display metadata only.
 
 ### G-5 — Consent-required Contact privacy is the hardest feature in the spec
 
-"Contact visible only to whoever the steward has granted access" on a publicly replicated feed means field-level encryption plus per-grantee key distribution — a key-management subsystem hiding in one paragraph. Separately, the proposed base-keypair *derivation* ("cryptographically verifiable by any client") does not work as described: Ed25519 has no publicly verifiable child-key derivation without exposing seed material. The goal — provable space↔base linkage — is achieved instead with an attestation proof chain (a `keet-identity-key`-style root that attests both keys, verifiable by anyone).
+"Contact visible only to whoever the steward has granted access" on a publicly replicated feed means field-level encryption plus per-grantee key distribution — the Contact field encrypted so that each approved reader, and no one else, can open it. That is a key-management subsystem hiding in one paragraph. Separately, the proposed base-keypair *derivation* ("cryptographically verifiable by any client") does not work as described: Ed25519 has no publicly verifiable child-key derivation without exposing seed material. The goal — provable space↔base linkage — is achieved instead with an attestation proof chain (a `keet-identity-key`-style root that attests both keys, verifiable by anyone).
 
 **Resolution:** build the structural half of consent (steward co-signature on curation) in v1; either defer selective Contact disclosure or price it explicitly as a sealed-box grant subsystem. Replace derivation with attestation in the spec.
 
 ### G-6 — Partner-chain queries need acceptance criteria
 
-The proposed default — a query at any base transitively reaches every connected base in one action — implies hop limits, loop protection, result aggregation, and an answer for offline bases. Two very different builds satisfy "partner-chain reachability": **(a)** traverse partner logs to enumerate reachable bases, then query each reachable base's published index — tractable, recommended for the prototype; **(b)** a live recursive search protocol — a significantly larger lift.
+The proposed default — a query at any base transitively reaches every connected base in one action, the way Fatima's "pythium" query crosses the partner chain in the walkthrough — implies decisions the spec doesn't yet make: how deep traversal goes, how loops are prevented, how results from many bases merge, and what happens when a base in the chain is offline. Two very different builds satisfy "partner-chain reachability": **(a)** traverse partner logs to enumerate reachable bases, then query each reachable base's published index — tractable, recommended for the prototype; **(b)** a live recursive search protocol — a significantly larger lift.
 
 **Resolution:** prototype acceptance criteria pinned to (a); (b) evaluated after the prototype exists.
 
@@ -125,7 +125,7 @@ Both are out of build scope, correctly independent of the core, and broadly soun
 
 **Viable, with conditions.** The stack runs on Node.js LTS (or Bare) on 64-bit ARM Linux. The conditions:
 
-- **64-bit OS is mandatory** — the native modules (crypto, UDP transport, RocksDB storage) ship prebuilds for `linux-arm64`, not 32-bit ARM. Raspberry Pi OS 64-bit on a Pi 4 or Pi 5 with 4 GB+ RAM is the reference target.
+- **64-bit OS is mandatory** — the stack's native components (cryptography, UDP transport, storage) ship precompiled binaries only for 64-bit ARM Linux (`linux-arm64`), not for 32-bit ARM. Raspberry Pi OS 64-bit on a Pi 4 or Pi 5 with 4 GB+ RAM is the reference target.
 - **SSD or high-endurance storage** — the RocksDB write pattern will wear out cheap SD cards. A small USB SSD, or at minimum a high-endurance card, should be part of the reference hardware note alongside the UPS the schema already recommends.
 - **Headless daemon, not a desktop app** — the base runs as a systemd-managed process. This also insulates the base from desktop-runtime churn.
 - **Week-one hardware spike** — prebuild coverage for `linux-arm64` is expected but must be verified on real hardware before the timeline is committed, not assumed. This spike is scheduled inside M0 ([§8](#8-build-plan-and-estimates)).
@@ -134,7 +134,7 @@ The resource math is comfortable: signals are ~200 bytes, so tens of thousands o
 
 ## §8 Build plan and estimates
 
-Estimates assume a CLI/daemon-grade prototype — full protocol, real replication, integration tests, on-hardware validation — with the walkthroughs' tabbed GUI client as a separately priced follow-on ([§9](#9-scoping-questions), Q-1). Estimates are engineer-weeks for one senior engineer; two engineers compress calendar time roughly 40%.
+Estimates assume a CLI/daemon-grade prototype — full protocol, real replication, integration tests, on-hardware validation — with the walkthroughs' tabbed GUI client as a separately priced follow-on ([§9](#9-scoping-questions), Q-1). Estimates are engineer-weeks for one senior engineer; two engineers compress calendar time roughly 40%. M0 is delivered inside Package 1 ([§11](#11-recommended-engagement-structure)); M1–M6 form Package 2.
 
 | Milestone | Content | Estimate |
 |---|---|---|
