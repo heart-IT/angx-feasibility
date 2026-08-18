@@ -147,31 +147,31 @@ Estimates assume a CLI/daemon-grade prototype — full protocol, real replicatio
 | M6 | Pi deployment hardening, two-Pi partnering soak test, operator documentation | 1 – 1.5 wk |
 | | **Total, scoped core loop** | **10.5 – 14.5 wk** |
 
-The milestone sums give 10.5–14.5 weeks at the full field-grade acceptance bar. The realistic floor is **8–10 weeks** if Phase 0 lands the simplest viable witness-discovery design (G-2), the CLI acceptance bar stays lean, and partner-chain reachability stays at enumerate-and-query (G-6a) — hence the **8–14 engineer-week** range this assessment quotes overall, to be narrowed after the design phase.
+The milestone sums give 10.5–14.5 weeks at the full field-grade acceptance bar. The realistic floor is **8–10 weeks** if Package 1's design stage lands the simplest viable witness-discovery design (G-2), the CLI acceptance bar stays lean, and partner-chain reachability stays at enumerate-and-query (G-6a) — hence the **8–14 engineer-week** range this assessment quotes overall, to be narrowed when Package 1 fixes the milestone prices.
 
-Calendar translation: roughly **2–4 months** for one senior engineer, or about 2–2.5 months with two at the top of the range. A minimal desktop GUI client over the same daemon is a separately scoped follow-on, adding an estimated **4–6 weeks**. A design-resolution phase for G-1 through G-6 adds **0.5–1 week** up front and de-risks everything after it; [§11](#11-recommended-engagement-structure) bundles it with M0 as the first fixed-price package.
+Calendar translation: roughly **2–4 months** for one senior engineer, or about 2–2.5 months with two at the top of the range. A minimal desktop GUI client over the same daemon is a separately scoped follow-on, adding an estimated **4–6 weeks**. The design-resolution work for G-1 through G-6 adds **0.5–1 week** up front and de-risks everything after it; [§11](#11-recommended-engagement-structure) bundles it with M0 as the first fixed-price package.
 
 ## §9 Scoping questions
 
 Answers to these determine the final quote and timeline:
 
 1. **Q-1 — UI expectations.** The walkthroughs describe a tabbed GUI client; the prototype scope list does not mention UI. Is the prototype CLI/daemon-grade (recommended first), or is a minimal GUI client part of this engagement?
-2. **Q-2 — Authority over open questions.** May the build team resolve the spec's open questions (and gaps G-1…G-6) during a design phase, subject to your written sign-off? Several are protocol decisions that will be load-bearing for every future implementation.
+2. **Q-2 — Authority over open questions.** May the build team resolve the spec's open questions (and gaps G-1…G-6) during Package 1's design stage, subject to your written sign-off? Several are protocol decisions that will be load-bearing for every future implementation.
 3. **Q-3 — Partner-chain acceptance criteria.** Does enumerate-and-query-each-reachable-base (G-6, option a) satisfy "partner-chain reachability" for the prototype?
 4. **Q-4 — Consent scope.** Is structural consent (co-signed curation) sufficient for v1, with selective Contact disclosure deferred or priced separately (G-5)?
-5. **Q-5 — Field deployment.** How many physical bases (Pis) should the prototype phase actually stand up and soak-test — the two-device minimum in M6, or a larger pilot?
+5. **Q-5 — Field deployment.** How many physical bases (Pis) should the build actually stand up and soak-test — the two-device minimum in M6, or a larger pilot?
 
 ## §10 Risk register
 
 | Risk | Severity | Mitigation |
 |---|---|---|
-| Witness-discovery protocol (G-2) is novel surface; a weak design fragments the witness stream | high | Resolve in the design phase with your sign-off; build on the topic-announcement pattern the stack already uses; integration-test with partitioned peers. |
+| Witness-discovery protocol (G-2) is novel surface; a weak design fragments the witness stream | high | Resolve in Package 1's design stage with your sign-off; build on the topic-announcement pattern the stack already uses; integration-test with partitioned peers. |
 | Verified-status semantics under missing data (G-3) drift between implementations | medium | Specify the resolver as a pure function with published test vectors; three-valued output. |
 | Self-reported timestamps enable backdating (G-4) | medium | Citation-anchored ordering for anything protocol-relevant; clocks demoted to display metadata. Accepted residual risk consistent with Constraint 10's reputational model. |
 | `linux-arm64` prebuild gaps force local native builds on Pi | low | M0 hardware spike verifies the full dependency set on target hardware in week one, before the timeline is committed. |
 | SD-card wear under RocksDB write load kills field bases | low | SSD / high-endurance storage in the reference hardware note; soak test in M6 measures write amplification. |
-| Scope creep from the spec's open-questions list during the build | medium | Design phase closes G-1…G-6 in writing; other open questions explicitly parked; milestone acceptance criteria fixed at kickoff. |
-| Desktop-runtime churn in the Pear platform affects client packaging | low | Bases run as headless daemons independent of desktop packaging; GUI client decisions deferred to the follow-on phase. |
+| Scope creep from the spec's open-questions list during the build | medium | Package 1's design stage closes G-1…G-6 in writing; other open questions explicitly parked; milestone acceptance criteria fixed at kickoff. |
+| Desktop-runtime churn in the Pear platform affects client packaging | low | Bases run as headless daemons independent of desktop packaging; GUI client decisions deferred to Package 3. |
 
 ## §11 Recommended engagement structure
 
