@@ -136,18 +136,20 @@ The resource math is comfortable: signals are ~200 bytes, so tens of thousands o
 
 Estimates assume a CLI/daemon-grade prototype — full protocol, real replication, integration tests, on-hardware validation — with the walkthroughs' tabbed GUI client as a separately priced follow-on ([§9](#9-scoping-questions), Q-1). Estimates are engineer-weeks for one senior engineer; two engineers compress calendar time roughly 40%. M0 is delivered inside Package 1 ([§11](#11-recommended-engagement-structure)); M1–M6 form Package 2.
 
-| Milestone | Content | Estimate |
-|---|---|---|
-| M0 | Wire schema and canonical encodings, keypair/identity layout, Corestore structure, **Raspberry Pi hardware spike** (§7) | 1 – 1.5 wk |
-| M1 | Node registration (both logs), steward signals, Hyperdrive attachments | 1 – 1.5 wk |
-| M2 | Library, replication, Hyperbee indexes, local queries | 1.5 – 2 wk |
-| M3 | Witnessing: signals, discovery protocol (G-2), verification resolver (G-1, G-3) | 2 – 3 wk |
-| M4 | Base initialization (threshold detection, bootstrap cases), Collection Log including consent co-sign path | 2 wk |
-| M5 | Partnering: handshake protocol, dual signing, dissolution and retirement, partner-chain reachability (G-6a) | 2 – 3 wk |
-| M6 | Pi deployment hardening, two-Pi partnering soak test, operator documentation | 1 – 1.5 wk |
-| | **Total, scoped core loop** | **10.5 – 14.5 wk** |
+| Milestone | Content | Estimate | Price |
+|---|---|---|---|
+| M0 | Wire schema and canonical encodings, keypair/identity layout, Corestore structure, **Raspberry Pi hardware spike** (§7) | 1 – 1.5 wk | in Package 1 |
+| M1 | Node registration (both logs), steward signals, Hyperdrive attachments | 1 – 1.5 wk | $3,000 |
+| M2 | Library, replication, Hyperbee indexes, local queries | 1.5 – 2 wk | $4,500 |
+| M3 | Witnessing: signals, discovery protocol (G-2), verification resolver (G-1, G-3) | 2 – 3 wk | $7,000 |
+| M4 | Base initialization (threshold detection, bootstrap cases), Collection Log including consent co-sign path | 2 wk | $5,000 |
+| M5 | Partnering: handshake protocol, dual signing, dissolution and retirement, partner-chain reachability (G-6a) | 2 – 3 wk | $6,500 |
+| M6 | Pi deployment hardening, two-Pi partnering soak test, operator documentation | 1 – 1.5 wk | $3,500 |
+| | **Total, scoped core loop** (Package 1 $4,500 + Package 2 $29,500) | **10.5 – 14.5 wk** | **$34,000** |
 
-The milestone sums give 10.5–14.5 weeks at the full field-grade acceptance bar. The realistic floor is **8–10 weeks** if Package 1's design stage lands the simplest viable witness-discovery design (G-2), the CLI acceptance bar stays lean, and partner-chain reachability stays at enumerate-and-query (G-6a) — hence the **8–14 engineer-week** range this assessment quotes overall, to be narrowed when Package 1 fixes the milestone prices.
+The milestone sums give 10.5–14.5 weeks at the full field-grade acceptance bar. The realistic floor is **8–10 weeks** if Package 1's design stage lands the simplest viable witness-discovery design (G-2), the CLI acceptance bar stays lean, and partner-chain reachability stays at enumerate-and-query (G-6a) — hence the **8–14 engineer-week** range this assessment quotes overall. The prices above are fixed either way: the effort range is the builder's risk, not the client's.
+
+Payment terms: each milestone is invoiced only on delivery and acceptance — nothing is paid in advance — and the next milestone starts once the previous invoice is settled. The engagement can stop after any milestone, with everything delivered to date the client's to keep. Prices assume the scope assumptions above (CLI/daemon-grade, G-6a reachability, structural consent per G-5); if design-stage sign-off changes a later milestone's scope, that milestone's price is revised and agreed before it starts.
 
 Calendar translation: roughly **2–4 months** for one senior engineer, or about 2–2.5 months with two at the top of the range. A minimal desktop GUI client over the same daemon is a separately scoped follow-on, adding an estimated **4–6 weeks**. The design-resolution work for G-1 through G-6 adds **0.5–1 week** up front and de-risks everything after it; [§11](#11-recommended-engagement-structure) bundles it with M0 as the first fixed-price package.
 
@@ -175,8 +177,8 @@ Answers to these determine the final quote and timeline:
 
 ## §11 Recommended engagement structure
 
-1. **Package 1 — design + foundations** (fixed price; design resolution + milestone M0). Two parts, in order: *(a)* close G-1 through G-6 and questions Q-1…Q-5 as short written protocol decisions with your sign-off, delivered as a schema addendum both sides build against; *(b)* implement M0 against those signed-off decisions — wire schema and code generation, keypair/identity layout, Corestore structure — validated on reference Raspberry Pi hardware. Ends with running code and a fixed price and date for each remaining milestone, quoted with schema and hardware risk already retired.
-2. **Package 2 — core-loop build** (M1–M6, milestone-billed). Each milestone lands as reviewable, tested code; M6 ends with two physical bases partnered and soak-tested on target hardware.
+1. **Package 1 — design + foundations** (fixed price; design resolution + milestone M0). Two parts, in order: *(a)* close G-1 through G-6 and questions Q-1…Q-5 as short written protocol decisions with your sign-off, delivered as a schema addendum both sides build against; *(b)* implement M0 against those signed-off decisions — wire schema and code generation, keypair/identity layout, Corestore structure — validated on reference Raspberry Pi hardware. Ends with running code and confirmed dates for the remaining milestones; their prices are already fixed in §8 and change only if design sign-off changes a milestone's scope, agreed before that milestone starts.
+2. **Package 2 — core-loop build** (M1–M6; $29,500 across six milestones, each invoiced on delivery). Each milestone lands as reviewable, tested code; M6 ends with two physical bases partnered and soak-tested on target hardware.
 3. **Package 3 — optional follow-ons.** Minimal GUI client (~4–6 weeks); selective Contact disclosure (G-5); federated live search (G-6b); multi-steward bases via Autobase; reader/bridge integration — each scoped and priced after the core proves out.
 
 ---
